@@ -13,8 +13,12 @@ double leftSpeed = 30;
 void setup() {
   // put your setup code here, to run once:
   ECE3_Init();
+<<<<<<< HEAD
   
   Serial.begin(9600);
+=======
+  Serial.begin(19200);
+>>>>>>> f12b105e3f43db54c2c5e85350336e79223a000e
 
   pinMode(left_nslp, OUTPUT);
   pinMode(left_dir, OUTPUT);
@@ -40,6 +44,7 @@ void loop() {
   
 }
 
+<<<<<<< HEAD
 int runSensor(){
   ECE3_read_IR(sensorValue);
     int minimum = 10000;
@@ -83,4 +88,18 @@ double PIDController(int input){
   //double errorD = input*Kd
   double output = errorP;
   return output;
+=======
+void runSensor(){
+  ECE3_read_IR(sensorValues);
+  //int error1[] = [-392, -1499, -2041, -1047, -1211, -750, -496, -509, -237, -252, -9, 224, 268, 379, 578, 473, 1057, 978, 2002, 1930, 459];
+  //int error2[] = [-379, -1414, -1978, -1231, -1938, -1441, -1169, -1549, -807, -995, -40, 885, 963, 1199, 1625, 1072, 1863, 1265, 1974, 1771, 390];
+
+  int fusion1 = (sensorValues[0]*(-8) + sensorValues[1]*(-4) + sensorValues[2]*(-2) + sensorValues[3]*(-1) + sensorValues[4]*(1) + sensorValues[5]*(2) + sensorValues[6]*(4) + sensorValues[7]*(8))/4;
+  int fusion2 = (sensorValues[0]*(-15) + sensorValues[1]*(-14) + sensorValues[2]*(-12) + sensorValues[3]*(-8) + sensorValues[4]*(8) + sensorValues[5]*(12) + sensorValues[6]*(14) + sensorValues[7]*(18))/8;
+
+  Serial.println(fusion1);
+  delay(1000);
+  Serial.println(fusion2);
+  delay(1000);
+>>>>>>> f12b105e3f43db54c2c5e85350336e79223a000e
 }
