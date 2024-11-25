@@ -8,17 +8,14 @@ const int right_dir = 30;
 const int right_pwm = 39;
 
 uint16_t sensorValue[8];
-double rightSpeed = 30;
-double leftSpeed = 30;
+double rightSpeed = 10;
+double leftSpeed = 10;
+double oldError = 0;
 void setup() {
   // put your setup code here, to run once:
   ECE3_Init();
-<<<<<<< HEAD
   
   Serial.begin(9600);
-=======
-  Serial.begin(19200);
->>>>>>> f12b105e3f43db54c2c5e85350336e79223a000e
 
   pinMode(left_nslp, OUTPUT);
   pinMode(left_dir, OUTPUT);
@@ -35,21 +32,35 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   double fusedError = runSensor();
-  double changeSpeed = PIDController(fusedError);
+  double changeSpeed = PIDController(fusedError, oldError);
+  double oldError = fusedError;
   int changeLeft = leftSpeed + changeSpeed;
   int changeRight = rightSpeed - changeSpeed;
-  delay(100);
-  runMotors(changeLeft, changeRight);
-  Serial.println(String(fusedError) + ", " + String(changeSpeed));
+
+  if(changeLeft < 0){
+    Serial.print("changeLeft: ");
+    Serial.println(changeLeft);
+    runMotors(-changeLeft, changeRight, HIGH, LOW);
+  }
+  else if(changeRight < 0){
+    Serial.print("changeRight: ");
+    Serial.println(changeRight);
+    runMotors(changeLeft, -changeRight, LOW, HIGH);
+  }
+  //delay(100);
+  else{
+   //Serial.println("normal operation");
+  runMotors(changeLeft, changeRight, LOW, LOW);
+  }
+  //Serial.println(String(fusedError) + ", " + String(changeSpeed));
   
 }
 
-<<<<<<< HEAD
 int runSensor(){
   ECE3_read_IR(sensorValue);
     int minimum = 10000;
     int maximum = 0;
-  for(int i = 0; i < 8; i++){
+   for(int i = 0; i < 8; i++){
      if(sensorValue[i] < minimum){
       minimum = sensorValue[i];
     }
@@ -70,36 +81,28 @@ int runSensor(){
 //  Serial.println(fusion1);
 //  Serial.println(fusion2);
 }
-void runMotors(int rightSpeed, int leftSpeed){
-   digitalWrite(left_dir, LOW);
-   digitalWrite(right_dir, LOW);
+void runMotors(int rightSpeed, int leftSpeed, bool l_dir, bool r_dir){
+   digitalWrite(left_dir, l_dir);
+   digitalWrite(right_dir, r_dir);
    
    digitalWrite(left_nslp, HIGH);
    digitalWrite(right_nslp, HIGH);
 
   analogWrite(left_pwm, leftSpeed);
   analogWrite(right_pwm, rightSpeed);
+
+  //positive speed and low means go forward
+  //positive speed and high means go backward
+  //negative speed and low means do nothing
+  //negative speed and high means do nothing 
 }
 
-double PIDController(int input){
-  double Kp = 10;
-  //doubleKd = 1;
+double PIDController(int input, int oldInput){
+  double Kp = 2;
+  double Kd = 5;
   double errorP = input*Kp/1000;
-  //double errorD = input*Kd
-  double output = errorP;
+  double errorD = (input - oldInput)*Kd/1000;
+  //Serial.println(errorD);
+  double output = errorD + errorP;  
   return output;
-=======
-void runSensor(){
-  ECE3_read_IR(sensorValues);
-  //int error1[] = [-392, -1499, -2041, -1047, -1211, -750, -496, -509, -237, -252, -9, 224, 268, 379, 578, 473, 1057, 978, 2002, 1930, 459];
-  //int error2[] = [-379, -1414, -1978, -1231, -1938, -1441, -1169, -1549, -807, -995, -40, 885, 963, 1199, 1625, 1072, 1863, 1265, 1974, 1771, 390];
-
-  int fusion1 = (sensorValues[0]*(-8) + sensorValues[1]*(-4) + sensorValues[2]*(-2) + sensorValues[3]*(-1) + sensorValues[4]*(1) + sensorValues[5]*(2) + sensorValues[6]*(4) + sensorValues[7]*(8))/4;
-  int fusion2 = (sensorValues[0]*(-15) + sensorValues[1]*(-14) + sensorValues[2]*(-12) + sensorValues[3]*(-8) + sensorValues[4]*(8) + sensorValues[5]*(12) + sensorValues[6]*(14) + sensorValues[7]*(18))/8;
-
-  Serial.println(fusion1);
-  delay(1000);
-  Serial.println(fusion2);
-  delay(1000);
->>>>>>> f12b105e3f43db54c2c5e85350336e79223a000e
 }
